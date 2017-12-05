@@ -1,0 +1,15 @@
+<resources>
+	<string name="app_name">Drawing Sender</string>
+
+	<string name="all_cancel">Cancel</string>
+	<string name="all_connection_failed">Connection failed</string>
+	<string name="all_no">No</string>
+	<string name="all_ok">OK</string>
+	<string name="all_yes">Yes</string>
+
+	<string name="paint_clear_confirmation">Clear drawing?</string>
+	<string name="paint_info">Developed by Wojciech Kolendo</string>
+	<string name="paint_select_color">Select color</string>
+	<string name="paint_send_confirmation">Send drawing?</string>
+
+</resources>
