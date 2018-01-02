@@ -1,5 +1,7 @@
 package wkolendo.drawingsender.views;
 
+import android.support.annotation.StringRes;
+
 import com.humandevice.android.mvpframework.LayerView;
 
 import java.util.ArrayList;
@@ -34,5 +36,11 @@ public interface PaintView extends LayerView {
 	int getScreenWidth();
 
 	int getScreenHeight();
+
+	void showSnack(@StringRes int message);
+
+	void showAddressDialog(String ip, String port);
+
+	void prepareSocket(String ip, String port, String json);
 
 }

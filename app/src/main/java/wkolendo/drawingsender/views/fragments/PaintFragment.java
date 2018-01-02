@@ -1,10 +1,15 @@
 package wkolendo.drawingsender.views.fragments;
 
+import android.app.Activity;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
@@ -13,6 +18,9 @@ import android.view.ViewGroup;
 
 import com.humandevice.android.mvpframework.PresenterFragment;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.util.ArrayList;
 
 import wkolendo.drawingsender.R;
@@ -23,6 +31,7 @@ import wkolendo.drawingsender.views.PaintView;
 import wkolendo.drawingsender.views.custom.CustomDrawPathValue;
 import wkolendo.drawingsender.views.custom.DrawingView;
 import wkolendo.drawingsender.views.dialogs.ColorPickerDialog;
+import wkolendo.drawingsender.views.dialogs.SocketAddressDialog;
 
 
 /**
@@ -31,9 +40,12 @@ import wkolendo.drawingsender.views.dialogs.ColorPickerDialog;
 
 public class PaintFragment extends PresenterFragment<PaintView, PaintPresenter> implements PaintView, View.OnClickListener {
 
+	private static final int REQUEST_NEW_SOCKET = 1000;
+
 	private DrawingView drawingView;
 	private FloatingActionButton clearButton;
 	private FloatingActionButton infoButton;
+	private FloatingActionButton settingsButton;
 	private FloatingActionButton sendButton;
 	private FloatingActionButton undoButton;
 	private FloatingActionButton colorButton;
@@ -59,12 +71,14 @@ public class PaintFragment extends PresenterFragment<PaintView, PaintPresenter> 
 		infoButton = view.findViewById(R.id.info);
 		sendButton = view.findViewById(R.id.send);
 		clearButton = view.findViewById(R.id.clear);
+		settingsButton = view.findViewById(R.id.settings);
 		undoButton = view.findViewById(R.id.undo);
 		colorButton = view.findViewById(R.id.color);
 
 		infoButton.setOnClickListener(this);
 		sendButton.setOnClickListener(this);
 		clearButton.setOnClickListener(this);
+		settingsButton.setOnClickListener(this);
 		undoButton.setOnClickListener(this);
 		colorButton.setOnClickListener(this);
 	}
@@ -158,8 +172,42 @@ public class PaintFragment extends PresenterFragment<PaintView, PaintPresenter> 
 	}
 
 	@Override
+	public void showSnack(@StringRes int message) {
+		Snackbar.make(getActivity().findViewById(android.R.id.content), message, Snackbar.LENGTH_LONG).show();
+	}
+
+	@Override
+	public void showAddressDialog(String ip, String port) {
+		SocketAddressDialog dialog = SocketAddressDialog.newInstance(ip, port);
+		dialog.setTargetFragment(this, REQUEST_NEW_SOCKET);
+		dialog.show(getFragmentManager(), "socket_dialog");
+	}
+
+	@Override
+	public void prepareSocket(String ip, String port, String json) {
+		new Client().execute(ip, port, json);
+	}
+
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		switch (requestCode) {
+			case REQUEST_NEW_SOCKET:
+				if (resultCode == Activity.RESULT_OK) {
+					String ip = data.getStringExtra(SocketAddressDialog.EXTRA_IP_ADDRESS);
+					String port = data.getStringExtra(SocketAddressDialog.EXTRA_PORT);
+					getPresenter().setAddress(ip, port);
+				}
+				break;
+		}
+	}
+
+	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
+			case R.id.settings:
+				getPresenter().onSettingsClick();
+				break;
 			case R.id.send:
 				getPresenter().onSendClick();
 				break;
@@ -175,6 +223,21 @@ public class PaintFragment extends PresenterFragment<PaintView, PaintPresenter> 
 			case R.id.color:
 				getPresenter().onColorPickClick();
 				break;
+		}
+	}
+
+	private class Client extends AsyncTask<String, Void, String> {
+		protected String doInBackground(String... messages) {
+			Socket socket;
+			try {
+				socket = new Socket(messages[0], Integer.parseInt(messages[1]));
+				PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+				out.println(messages[2]);
+				socket.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return "";
 		}
 	}
 }

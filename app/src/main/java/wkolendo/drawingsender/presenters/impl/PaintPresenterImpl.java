@@ -4,15 +4,21 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.humandevice.android.mvpframework.BasicPresenter;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.util.ArrayList;
 
 import software.rsquared.androidlogger.Logger;
+import wkolendo.drawingsender.R;
 import wkolendo.drawingsender.models.Drawing;
 import wkolendo.drawingsender.presenters.PaintPresenter;
 import wkolendo.drawingsender.views.PaintView;
@@ -29,6 +35,9 @@ public class PaintPresenterImpl extends BasicPresenter<PaintView> implements Pai
 			Color.BLACK, Color.GRAY, Color.LTGRAY, Color.RED, Color.MAGENTA, Color.BLUE, Color.CYAN, Color.GREEN, Color.YELLOW};
 
 	private ObjectMapper objectMapper;
+
+	private String ip = "";
+	private String port = "";
 
 	/**
 	 * For SaveInstanceState purpose only
@@ -60,6 +69,13 @@ public class PaintPresenterImpl extends BasicPresenter<PaintView> implements Pai
 		if (view != null) {
 			ArrayList<CustomDrawPathValue> paths = view.getPaths();
 			bundle.putSerializable(EXTRA_DRAWING_PATH, paths);
+		}
+	}
+
+	@Override
+	public void onSettingsClick() {
+		if (view != null) {
+			view.showAddressDialog(ip, port);
 		}
 	}
 
@@ -101,9 +117,13 @@ public class PaintPresenterImpl extends BasicPresenter<PaintView> implements Pai
 	@Override
 	public void onSend() {
 		if (view != null) {
-			Drawing drawing = new Drawing(view.getScreenHeight(), view.getScreenWidth());
-			drawing.setPaths(view.getPreparedPaths());
-			sendViaSocket(serializeToJson(drawing));
+			if (TextUtils.isEmpty(ip) || TextUtils.isEmpty(port)) {
+				view.showSnack(R.string.paint_socket_empty);
+			} else {
+				Drawing drawing = new Drawing(view.getScreenHeight(), view.getScreenWidth());
+				drawing.setPaths(view.getPreparedPaths());
+				sendViaSocket(serializeToJson(drawing));
+			}
 		}
 	}
 
@@ -112,6 +132,12 @@ public class PaintPresenterImpl extends BasicPresenter<PaintView> implements Pai
 		if (view != null) {
 			view.clearView();
 		}
+	}
+
+	@Override
+	public void setAddress(String ip, String port) {
+		this.ip = ip;
+		this.port = port;
 	}
 
 	private String serializeToJson(@NonNull Drawing drawing) {
@@ -126,7 +152,8 @@ public class PaintPresenterImpl extends BasicPresenter<PaintView> implements Pai
 	}
 
 	private void sendViaSocket(String json) {
-		// TODO: 04/12/2017
-
+		if (view != null) {
+			view.prepareSocket(ip, port, json);
+		}
 	}
 }

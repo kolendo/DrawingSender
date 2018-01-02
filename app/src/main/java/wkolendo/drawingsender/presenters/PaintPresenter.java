@@ -10,6 +10,8 @@ import wkolendo.drawingsender.views.PaintView;
 
 public interface PaintPresenter extends Presenter<PaintView> {
 
+	void onSettingsClick();
+
 	void onSendClick();
 
 	void onInfoClick();
@@ -23,5 +25,7 @@ public interface PaintPresenter extends Presenter<PaintView> {
 	void onSend();
 
 	void onClear();
+
+	void setAddress(String ip, String port);
 
 }
