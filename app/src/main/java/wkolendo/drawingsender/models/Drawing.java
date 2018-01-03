@@ -23,12 +23,16 @@ public class Drawing {
 	@JsonProperty("paths")
 	private ArrayList<Path> paths;
 
+	@JsonProperty("force_clear")
+	private boolean forceClear;
+
 	public Drawing() {
 	}
 
 	public Drawing(int height, int width) {
 		this.height = height;
 		this.width = width;
+		this.paths = new ArrayList<>();
 	}
 
 	public int getHeight() {
@@ -53,5 +57,13 @@ public class Drawing {
 
 	public void setPaths(ArrayList<Path> paths) {
 		this.paths = paths;
+	}
+
+	public boolean isForceClear() {
+		return forceClear;
+	}
+
+	public void setForceClear(boolean forceClear) {
+		this.forceClear = forceClear;
 	}
 }

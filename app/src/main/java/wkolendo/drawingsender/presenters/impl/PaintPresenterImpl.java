@@ -11,10 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.humandevice.android.mvpframework.BasicPresenter;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.net.Socket;
 import java.util.ArrayList;
 
 import software.rsquared.androidlogger.Logger;
@@ -81,9 +77,10 @@ public class PaintPresenterImpl extends BasicPresenter<PaintView> implements Pai
 
 	@Override
 	public void onSendClick() {
-		if (view != null) {
-			view.showSendConfirmDialog();
-		}
+//		if (view != null) {
+//			view.showSendConfirmDialog();
+//		}
+		onSend();
 	}
 
 	@Override
@@ -131,6 +128,12 @@ public class PaintPresenterImpl extends BasicPresenter<PaintView> implements Pai
 	public void onClear() {
 		if (view != null) {
 			view.clearView();
+
+			if (!TextUtils.isEmpty(ip) && !TextUtils.isEmpty(port)) {
+				Drawing drawing = new Drawing(view.getScreenHeight(), view.getScreenWidth());
+				drawing.setForceClear(true);
+				sendViaSocket(serializeToJson(drawing));
+			}
 		}
 	}
 

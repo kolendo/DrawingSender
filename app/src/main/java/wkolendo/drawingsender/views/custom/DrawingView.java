@@ -58,6 +58,7 @@ public class DrawingView extends View {
 
 	public void clear() {
 		paths.clear();
+		preparedPaths.clear();
 		invalidate();
 	}
 
